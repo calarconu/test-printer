@@ -13,39 +13,62 @@
  </style>
 </head>
 <body>
-  Printer IP Address: <br>
-  <input type="text" id="ip_addr" style="width:500px"><br><br>
-  Script: <br>
-  <textarea id="zpl" style="width:500px" rows = '20'>^XA^PW400^LL200^FO20,20^A0N,30,30^FDThis is a TEST^FS^XZ</textarea><br><br>
-  <button onclick="print(); return false;">Print</button>
-  <div id="output"></div>
+
+  Imprimiendo...
+
   <script>
    
     print();
    
     function print(){
      
-     let url = new URL(location.href);
-     let searchParams = new URLSearchParams(url.search);
-     console.log(searchParams.get('tipo'));
-      var zpl = document.getElementById("zpl").value;
-      var ip_addr = document.getElementById("ip_addr").value;
-      var output = document.getElementById("output");
-      var url = "http://192.168.43.63/pstprnt";
-      var method = "POST";
-      var async = true;
-      var request = new XMLHttpRequest();
+      let urlActual = new URL(location.href);
+      let searchParams = new URLSearchParams(urlActual.search);
 
-      request.onload = function () {
-        var status = request.status;
-        var data = request.responseText;
+      let datos = JSON.parse(searchParams.get('datos'));
+
+      let tipo = datos.tipo;
+      let vehiculo = datos.vehiculo;
+      let urlQR = datos.urlQR;
+      let ipImpresora = datos.ipImpresora;
+
+      let paso1 = '';
+      let paso2 = '';
+      let paso3 = '';
+      let impresionZpl = '';
+     
+      if( tipo === 'seguimiento' ){
+        paso1 = '^FS^CFA,14^FO380,28^FWB^FD1.Active la camara de su telefono.';
+        paso2 = '^FS^CFA,14^FO410,136^FWB^FD2.Escanee este codigo QR.';
+        paso3 = '^FS^CFA,14^FO440,5^FWB^FD3.Vea el seguimiento de su Vehiculo. ^FS';
+
+        impresionZpl = `^XA^FO120,135^BQ,2,5^FD,A ${urlQR}^FS^CFA,20^FO340,200^FWB^FD${vehiculo}${paso1} ${paso2} ${paso3}^XZ`;
+      }else if( tipo === 'servicio' ){
+        paso1 = '^FS^CFA,14^FO380,15^FWB^FD1.Active la camara de su telefono.';
+        paso2 = '^FS^CFA,14^FO410,125^FWB^FD2.Escanee este codigo QR.';
+        paso3 = '^FS^CFA,14^FO440,225^FWB^FD3.Agende su hora. ^FS';
+
+        impresionZpl = `^XA^FO120,135^BQ,2,5^FD,A ${urlQR}^FS^CFA,20^FO340,200^FWB^FD${vehiculo}${paso1} ${paso2} ${paso3}^XZ`;
+      }else if( tipo === 'autoNuevo' ){
+        paso1 = '^FS^CFA,14^FO380,20^FWB^FD1.Active la camara de su telefono.';
+        paso2 = '^FS^CFA,14^FO410,130^FWB^FD2.Escanee este codigo QR.';
+        paso3 = '^FS^CFA,14^FO440,225^FWB^FD3.Agende su hora. ^FS';
+
+        impresionZpl = `^XA^FO120,135^BQN,2,5^FD,A ${urlQR}^FS^CFA,20^FO330,140^FWB^FD${vehiculo}${paso1} ${paso2} ${paso3}^XZ`;
       }
 
-      request.open(method, url, async);
-      request.setRequestHeader("Content-Length", zpl.length);
+      let urlImpresion = "http://"+ipImpresora+"/pstprnt";
+      let async = true;
+      let request = new XMLHttpRequest();
+      request.onload = function () {
+        let status = request.status;
+        let data = request.responseText;
 
-      // Actually sends the request to the server.
-      request.send(zpl);
+        console.log(status, data);
+      }
+      request.timeout = 3000;
+      request.open('POST', urlImpresion, async);
+      request.send(impresionZpl);
     }
   </script>
 </body>
