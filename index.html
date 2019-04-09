@@ -26,6 +26,8 @@
       let searchParams = new URLSearchParams(urlActual.search);
 
       let datos = decodeURIComponent(JSON.parse(searchParams.get('datos')));
+      
+      console.log(datos);
 
       let tipo = datos.tipo;
       let vehiculo = datos.vehiculo;
