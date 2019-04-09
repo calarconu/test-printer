@@ -25,7 +25,7 @@
       let urlActual = new URL(location.href);
       let searchParams = new URLSearchParams(urlActual.search);
 
-      let datos = decodeURIComponent(JSON.parse(searchParams.get('datos')));
+      let datos = (JSON.parse(decodeURIComponent(searchParams.get('datos')));
       
       console.log(datos);
 
